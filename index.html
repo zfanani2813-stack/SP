@@ -87,8 +87,6 @@
             <div class="flex justify-between items-start">
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 md:w-14 md:h-14 bg-white rounded-xl flex items-center justify-center shadow-md overflow-hidden shrink-0 border border-slate-100">
-                        <!-- PETUNJUK GANTI LOGO: -->
-                        <!-- Masukkan link gambar Bapak di antara tanda petik src di bawah ini -->
                         <img 
                             id="logo-sekolah"
                             src="https://img.icons8.com/fluency/96/school.png" 
@@ -102,16 +100,20 @@
                         <p class="text-xs md:text-sm font-medium text-blue-600 mt-1">Zaenul Fanani, S.Pd</p>
                     </div>
                 </div>
-                <div class="flex gap-2 shrink-0">
-                    <button onclick="resetNilaiSemua()" class="flex items-center justify-center bg-rose-100 text-rose-600 px-3 py-2 rounded-xl hover:bg-rose-200 transition font-bold text-[10px] md:text-xs shadow-sm active:scale-95">
-                        <span>Reset</span>
-                    </button>
-                    <button id="btn-copy" onclick="copyToWA()" class="flex items-center gap-2 text-[10px] md:text-xs bg-blue-600 text-white px-3 py-2 rounded-xl hover:bg-blue-700 transition font-bold shadow-sm active:scale-95">
-                        <span>Salin WA</span>
-                    </button>
-                    <button id="btn-export" onclick="exportToSheet()" class="flex items-center gap-2 text-[10px] md:text-xs bg-emerald-600 text-white px-3 py-2 rounded-xl hover:bg-emerald-700 transition font-bold shadow-sm active:scale-95">
-                        <span id="export-text">Kirim ke Sheet</span>
-                        <div id="export-loader" class="hidden loading-spinner"></div>
+                <!-- Tombol Aksi Sisi Kanan -->
+                <div class="flex flex-col gap-2 shrink-0 items-end">
+                    <div class="flex gap-2">
+                        <button id="btn-copy" onclick="copyToWA()" class="flex items-center gap-2 text-[10px] md:text-xs bg-blue-600 text-white px-3 py-2 rounded-xl hover:bg-blue-700 transition font-bold shadow-sm active:scale-95">
+                            <span>Salin WA</span>
+                        </button>
+                        <button id="btn-export" onclick="exportToSheet()" class="flex items-center gap-2 text-[10px] md:text-xs bg-emerald-600 text-white px-3 py-2 rounded-xl hover:bg-emerald-700 transition font-bold shadow-sm active:scale-95">
+                            <span id="export-text">Kirim ke Sheet</span>
+                            <div id="export-loader" class="hidden loading-spinner"></div>
+                        </button>
+                    </div>
+                    <!-- Tombol Reset dipindah ke sini (di bawah Kirim ke Sheet) -->
+                    <button onclick="resetNilaiSemua()" class="w-full flex items-center justify-center bg-rose-100 text-rose-600 px-3 py-1.5 rounded-xl hover:bg-rose-200 transition font-bold text-[10px] md:text-xs shadow-sm active:scale-95 border border-rose-200">
+                        <span>Reset Nilai Kelas</span>
                     </button>
                 </div>
             </div>
@@ -158,7 +160,7 @@
             "XI TPTU": ["Adam Adrian", "Ahmad Madani", "Ahmad Muzakkir", "Arif Ilham", "Azfar Zaid Habibulloh", "Azwan", "Gigih Ramadhan Junaidi", "Habib Darul Falah", "Hilman Maulana", "Indra Aprianto", "Jaenul Anwar", "Juma'ah", "Muhammad Adrian Putra", "Muhammad Arjun", "Muhamad Imron Rohadi", "Muhammad Ariya Ramadan", "Muhammad Ega Indrawan", "M. Ikbal Wahyudi", "Sahdi", "Sahlur Ridho"]
         };
 
-        const WEB_APP_URL = ""; 
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwcSGbpQ_L0fp-rcXWTlSd0LuAy5tP4CXoyijn1NiU11j-2N-dj672Ni9EKhog0QskICw/exec"; 
         const NILAI_DEFAULT = 0;
 
         let userScores = JSON.parse(localStorage.getItem('guruPointScores')) || {};
