@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sistem Penilaian - Zaenul Fanani, S.Pd</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .loading-spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 640px) {
+            .btn-touch { min-height: 48px; min-width: 48px; }
+        }
+        
+        #toast {
+            visibility: hidden;
+            min-width: 200px;
+            background-color: #334155;
+            color: #fff;
+            text-align: center;
+            border-radius: 12px;
+            padding: 12px;
+            position: fixed;
+            z-index: 50;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 14px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+
+        @keyframes fadein {
+            from {bottom: 0; opacity: 0;}
+            to {bottom: 30px; opacity: 1;}
+        }
+
+        @keyframes fadeout {
+            from {bottom: 30px; opacity: 1;}
+            to {bottom: 0; opacity: 0;}
+        }
+    </style>
+</head>
+<body class="p-3 md:p-8 pb-20">
+
+    <div id="toast">Berhasil disalin!</div>
+
+    <div class="max-w-3xl mx-auto">
+        <!-- Header Utama dengan Logo -->
+        <div class="flex flex-col mb-6 gap-4">
+            <div class="flex justify-between items-start">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 md:w-14 md:h-14 bg-white rounded-xl flex items-center justify-center shadow-md overflow-hidden shrink-0 border border-slate-100">
+                        <!-- PETUNJUK GANTI LOGO: -->
+                        <!-- Masukkan link gambar Bapak di antara tanda petik src di bawah ini -->
+                        <img 
+                            id="logo-sekolah"
+                            src="https://img.icons8.com/fluency/96/school.png" 
+                            alt="Logo Sekolah" 
+                            class="w-full h-full object-contain p-1" 
+                            onerror="this.src='https://via.placeholder.com/100?text=LOGO'"
+                        >
+                    </div>
+                    <div>
+                        <h1 class="text-xl md:text-2xl font-extrabold text-slate-800 tracking-tight leading-none">Sistem Penilaian</h1>
+                        <p class="text-xs md:text-sm font-medium text-blue-600 mt-1">Zaenul Fanani, S.Pd</p>
+                    </div>
+                </div>
+                <div class="flex gap-2 shrink-0">
+                    <button onclick="resetNilaiSemua()" class="flex items-center justify-center bg-rose-100 text-rose-600 px-3 py-2 rounded-xl hover:bg-rose-200 transition font-bold text-[10px] md:text-xs shadow-sm active:scale-95">
+                        <span>Reset</span>
+                    </button>
+                    <button id="btn-copy" onclick="copyToWA()" class="flex items-center gap-2 text-[10px] md:text-xs bg-blue-600 text-white px-3 py-2 rounded-xl hover:bg-blue-700 transition font-bold shadow-sm active:scale-95">
+                        <span>Salin WA</span>
+                    </button>
+                    <button id="btn-export" onclick="exportToSheet()" class="flex items-center gap-2 text-[10px] md:text-xs bg-emerald-600 text-white px-3 py-2 rounded-xl hover:bg-emerald-700 transition font-bold shadow-sm active:scale-95">
+                        <span id="export-text">Kirim ke Sheet</span>
+                        <div id="export-loader" class="hidden loading-spinner"></div>
+                    </button>
+                </div>
+            </div>
+
+            <div class="glass-card p-4 rounded-2xl shadow-sm space-y-3">
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="flex flex-col flex-1 min-w-[120px]">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Pilih Kelas</label>
+                        <select id="select-kelas" onchange="gantiKelas(this.value)" class="w-full bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-700 py-2 px-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-400 appearance-none">
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+                    <div class="flex flex-col">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Tanggal</label>
+                        <input type="date" id="tanggal-input" class="bg-slate-50 text-sm font-medium text-slate-600 p-2 rounded-xl outline-none border border-slate-100 focus:border-blue-400">
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Kegiatan</label>
+                        <input type="text" id="jenis-penilaian" placeholder="Nama Tugas..." class="bg-slate-50 text-sm font-medium text-slate-600 p-2 rounded-xl outline-none border border-slate-100 focus:border-blue-400">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student List Container -->
+        <div id="student-list" class="space-y-3"></div>
+
+        <div class="mt-8 text-center pb-10">
+            <p id="status-msg" class="text-[10px] text-slate-400 italic tracking-wider uppercase">Sistem Penilaian v2.0 • Zaenul Fanani, S.Pd</p>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // CONFIGURASI DATA MASTER
+        // ==========================================
+        const DATA_MASTER = {
+            "X TK 1": ["Abdul Aziz", "Ahmad Sabudin", "Andika Santuri", "Argya Al Ghibran Pratama", "Bayu Andika", "Fairuzzaini", "Farizal Hikam", "Firza Wananda", "Haekal Azmi", "Hasan Basri", "Herma Rahma Yulianda", "Lalu Ade Dwi Anggian", "Lalu Panji Wijaya Saputra", "Muhammad Erwin", "Marzuki Ali", "Moh. Haetami", "Muhamad Fikri Al Islami", "Muhammad Aditya Juniar", "Muhammad Reza", "Paesal Aziz", "Riswan Efendi", "Rio Ferdinand", "Sandi Irawan", "Tamhiz", "Zihandi Alan Arzaki"],
+            "X TK 2": ["Abdul Muhti", "Aldy", "Arip Hidayatullah", "Diki Wahyudi", "Fandi Irawan", "Fery Firmansyah", "Gede Agus Pramasetya", "Haekal Ramdhan", "Hendra Kurniawan", "Ibnu Wathan", "Lalu Deny Hariadi", "Lalu Raditya Roni Saputra", "Mahendra Irawan", "Maulana Iqbal", "Muh. Alfin Pratama", "Muhammad Raffa Khoirul Azzam", "M. Ricki Ikbal", "Muhamat Saleh", "Muhammad Hadrian", "Muhammad Syahrul Tanzil", "Rama Ramdani", "Rizky Pratama", "Suherman", "Zadil Ruzahan"],
+            "XI TITL": ["Abdul Mukti", "Ahmad Suherman", "Alwani Laika", "Anisa", "Baki Nasuha", "Baiq Widya Luna Kusuma Dewi", "Bayu Saputra", "Duny Ardika Pratama", "Fathurrahman", "Lalu Muhammad Aliakbar", "Multazam", "Malik Abdul Aziz", "Muhajirin", "Muhamad Haekal", "Nurahim", "Selpi Karinsa", "Siti Aisyah", "Wisnu Ariyanto", "Zahrul", "Yadi Saputra", "Zidan Desta Harianto", "Zul Firman"],
+            "XI TJTL": ["Adrian Trisno", "Agus Gunawan Syahban", "Ahmad Akbar", "Andika Pratama", "Anjas Fadel Andika", "Arya Saputra", "Baiq Sepa Putri Aprilia", "Dika Sibnu Sejarah", "Darumdia", "Fhaqihun Alif", "Gina Asri", "I Putu Diva Yudistira Pramana", "Irfan Humaidi", "Martin", "Muhammad Irhamdi", "M. Kholid Saputra", "Reni Alfiana", "Ruhasa", "Ruslan", "Sari Ayu", "Suel Ahmad Zaki"],
+            "XI TPTU": ["Adam Adrian", "Ahmad Madani", "Ahmad Muzakkir", "Arif Ilham", "Azfar Zaid Habibulloh", "Azwan", "Gigih Ramadhan Junaidi", "Habib Darul Falah", "Hilman Maulana", "Indra Aprianto", "Jaenul Anwar", "Juma'ah", "Muhammad Adrian Putra", "Muhammad Arjun", "Muhamad Imron Rohadi", "Muhammad Ariya Ramadan", "Muhammad Ega Indrawan", "M. Ikbal Wahyudi", "Sahdi", "Sahlur Ridho"]
+        };
+
+        const WEB_APP_URL = ""; 
+        const NILAI_DEFAULT = 0;
+
+        let userScores = JSON.parse(localStorage.getItem('guruPointScores')) || {};
+        let userNotes = JSON.parse(localStorage.getItem('guruPointNotes')) || {};
+        let kelasAktif = localStorage.getItem('guruPointKelasAktif') || Object.keys(DATA_MASTER)[0];
+        document.getElementById('tanggal-input').valueAsDate = new Date();
+
+        function showToast(msg) {
+            const t = document.getElementById("toast");
+            t.textContent = msg;
+            t.className = "show";
+            setTimeout(() => { t.className = t.className.replace("show", ""); }, 3000);
+        }
+
+        function renderKelasOptions() {
+            const select = document.getElementById('select-kelas');
+            select.innerHTML = '';
+            Object.keys(DATA_MASTER).forEach(namaKelas => {
+                const opt = document.createElement('option');
+                opt.value = namaKelas;
+                opt.textContent = namaKelas;
+                if (namaKelas === kelasAktif) opt.selected = true;
+                select.appendChild(opt);
+            });
+        }
+
+        function renderList() {
+            const container = document.getElementById('student-list');
+            container.innerHTML = '';
+            const daftarSiswa = DATA_MASTER[kelasAktif] || [];
+            daftarSiswa.forEach((namaSiswa) => {
+                const studentId = `${kelasAktif}-${namaSiswa}`;
+                const skor = userScores[studentId] !== undefined ? userScores[studentId] : NILAI_DEFAULT;
+                const catatan = userNotes[studentId] || "";
+                const row = document.createElement('div');
+                row.className = 'glass-card rounded-2xl shadow-sm p-4 flex flex-col gap-3';
+                row.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div class="flex-1"><h3 class="text-sm md:text-base font-bold text-slate-700">${namaSiswa}</h3></div>
+                        <div class="flex items-center bg-blue-600 px-4 py-2 rounded-2xl shadow-inner border border-blue-700">
+                             <input type="number" value="${skor}" onchange="updateSkorManual('${studentId}', this.value)" class="w-12 text-center font-extrabold bg-transparent text-white outline-none text-xl md:text-2xl">
+                             <span class="text-[10px] font-black text-blue-200 uppercase ml-1">Pts</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="text" placeholder="Tambah catatan..." value="${catatan}" onchange="updateKet('${studentId}', this.value)" class="flex-1 bg-slate-50 border border-slate-100 text-xs p-3 rounded-xl outline-none italic">
+                        <div class="flex gap-1">
+                            <button onclick="updateSkor('${studentId}', -5)" class="btn-touch w-12 h-12 flex items-center justify-center rounded-xl bg-rose-100 text-rose-600 font-black">-5</button>
+                            <button onclick="updateSkor('${studentId}', 5)" class="btn-touch w-12 h-12 flex items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 font-black">+5</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function updateSkor(id, delta) {
+            const current = userScores[id] !== undefined ? userScores[id] : NILAI_DEFAULT;
+            userScores[id] = current + delta;
+            saveData();
+            renderList();
+        }
+
+        function updateSkorManual(id, val) {
+            let n = parseInt(val);
+            userScores[id] = isNaN(n) ? 0 : n;
+            saveData();
+            renderList();
+        }
+
+        function updateKet(id, val) {
+            userNotes[id] = val;
+            saveData();
+        }
+
+        function gantiKelas(nama) {
+            kelasAktif = nama;
+            localStorage.setItem('guruPointKelasAktif', kelasAktif);
+            renderList();
+        }
+
+        function resetNilaiSemua() {
+            const konfirmasi = confirm(`Reset semua nilai di kelas ${kelasAktif} kembali ke ${NILAI_DEFAULT}?`);
+            if(konfirmasi) {
+                DATA_MASTER[kelasAktif].forEach(nama => {
+                    const id = `${kelasAktif}-${nama}`;
+                    userScores[id] = NILAI_DEFAULT;
+                    userNotes[id] = "";
+                });
+                saveData();
+                renderList();
+                showToast("Nilai berhasil direset!");
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('guruPointScores', JSON.stringify(userScores));
+            localStorage.setItem('guruPointNotes', JSON.stringify(userNotes));
+        }
+
+        function copyToWA() {
+            const tanggal = document.getElementById('tanggal-input').value;
+            const kegiatan = document.getElementById('jenis-penilaian').value || "Penilaian";
+            let text = `*LAPORAN NILAI ${kelasAktif}*\n📅 ${tanggal}\n📝 ${kegiatan}\n\n`;
+            DATA_MASTER[kelasAktif].forEach((nama, i) => {
+                const id = `${kelasAktif}-${nama}`;
+                const skor = userScores[id] !== undefined ? userScores[id] : NILAI_DEFAULT;
+                const ket = userNotes[id] ? ` (${userNotes[id]})` : "";
+                text += `${i + 1}. ${nama}: *${skor}*${ket}\n`;
+            });
+            const dummy = document.createElement("textarea");
+            document.body.appendChild(dummy);
+            dummy.value = text; dummy.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummy);
+            showToast("Berhasil disalin!");
+        }
+
+        async function exportToSheet() {
+            if (!WEB_APP_URL) { alert("Masukkan URL Web App dari Apps Script!"); return; }
+            const btn = document.getElementById('btn-export');
+            const loader = document.getElementById('export-loader');
+            const btnText = document.getElementById('export-text');
+            const tanggal = document.getElementById('tanggal-input').value;
+            const kegiatan = document.getElementById('jenis-penilaian').value || "Penilaian Umum";
+
+            const dataKirim = DATA_MASTER[kelasAktif].map(nama => {
+                const id = `${kelasAktif}-${nama}`;
+                return { 
+                    nama: nama, 
+                    skor: userScores[id] !== undefined ? userScores[id] : NILAI_DEFAULT, 
+                    ket: userNotes[id] || "" 
+                };
+            });
+
+            btn.disabled = true;
+            loader.classList.remove('hidden');
+            btnText.textContent = "Mengirim...";
+
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ kelas: kelasAktif, tanggal, kegiatan, data: dataKirim })
+                });
+                showToast("Data sedang dikirim ke Sheet...");
+            } catch (err) {
+                alert("Gagal terhubung ke Google Sheet.");
+            } finally {
+                btn.disabled = false;
+                loader.classList.add('hidden');
+                btnText.textContent = "Kirim ke Sheet";
+            }
+        }
+
+        renderKelasOptions();
+        renderList();
+    </script>
+</body>
+</html>
